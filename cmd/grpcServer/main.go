@@ -5,9 +5,12 @@ import (
 	"FcCeS/internal/pb"
 	"FcCeS/internal/service"
 	"database/sql"
+
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
 	"net"
+
+	_ "github.com/mattn/go-sqlite3"
 )
 
 func main() {
