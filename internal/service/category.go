@@ -4,6 +4,7 @@ import (
 	"FcCeS/internal/database"
 	"FcCeS/internal/pb"
 	"golang.org/x/net/context"
+	"io"
 )
 
 type CategoryService struct {
@@ -60,4 +61,31 @@ func (c *CategoryService) GetCategory(_ context.Context, in *pb.CategoryGetReque
 		Description: category.Description,
 	}
 	return categoryResponse, nil
+}
+
+func (c *CategoryService) CreateCategoryStream(stream pb.CategoryService_CreateCategoryStreamServer) error {
+	categories := &pb.CategoryList{}
+
+	for {
+		category, err := stream.Recv()
+		if err == io.EOF {
+			return stream.SendAndClose(categories)
+		}
+
+		if err != nil {
+			return err
+		}
+
+		result, err := c.CategoryDB.Create(category.Name, category.Description)
+
+		if err != nil {
+			return err
+		}
+
+		categories.Categories = append(categories.Categories, &pb.Category{
+			Id:          result.ID,
+			Name:        result.Name,
+			Description: result.Description,
+		})
+	}
 }
